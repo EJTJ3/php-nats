@@ -1,0 +1,14 @@
+# idea
+.idea
+.idea/
+.idea/*
+
+# php unit
+.phpunit.result.cache
+build
+build/
+build/*
+
+# composer
+composer.lock
+/vendor

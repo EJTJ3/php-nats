@@ -1,0 +1,30 @@
+{
+    "name": "ejtj3/php-nats",
+    "description": "Nats client",
+    "autoload": {
+        "psr-4": {
+            "EJTJ3\\PhpNats\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Evert Jan Hakvoort",
+            "email": "evertjan@hakvoort.io"
+        }
+    ],
+    "require": {
+        "php" : "^7.4 | ^8.0",
+        "nyholm/dsn": "^2.0",
+        "psr/log": "^1.1",
+        "ext-json": "*"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^9.0"
+    },
+    "suggest": {
+        "clue/socket-raw": "Allows using the new socket client"
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit"
+    }
+}

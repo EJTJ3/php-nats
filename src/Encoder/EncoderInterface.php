@@ -9,13 +9,7 @@ namespace EJTJ3\PhpNats\Encoder;
  */
 interface EncoderInterface
 {
-    /**
-     * @param mixed $payload
-     */
-    public function encode($payload): string;
+    public function encode(object|string|array $payload): string;
 
-    /**
-     * @return mixed
-     */
-    public function decode(string $payload);
+    public function decode(string $payload): object|array;
 }

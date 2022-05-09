@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace EJTJ3\PhpNats\Logger;
 
 use Psr\Log\AbstractLogger;

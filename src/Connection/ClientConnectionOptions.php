@@ -11,66 +11,57 @@ use EJTJ3\PhpNats\Constant\Nats;
  */
 final class ClientConnectionOptions
 {
-    /**
-     * Turns on +OK protocol acknowledgements.
-     */
-    private bool $verbose;
+    public function __construct(
+        /**
+         * Turns on +OK protocol acknowledgements.
+         */
+        private bool    $verbose = true,
 
-    /**
-     * Turns on additional strict format checking, e.g. for properly formed subjects.
-     */
-    private bool $pedantic;
+        /**
+         * Turns on additional strict format checking, e.g. for properly formed subjects.
+         */
+        private bool    $pedantic = true,
 
-    /**
-     * Indicates whether the client requires an SSL connection.
-     */
-    private bool $tlsRequired;
+        /**
+         * Indicates whether the client requires an SSL connection.
+         */
+        private bool    $tlsRequired = false,
 
-    /**
-     * Client authorization token (if auth_required is set).
-     */
-    private ?string $authToken;
+        /**
+         * Client authorization token (if auth_required is set).
+         */
+        private ?string $authToken = null,
 
-    /**
-     * Connection username (if auth_required is set).
-     */
-    private ?string $user;
+        /**
+         * Connection username (if auth_required is set).
+         */
+        private ?string $user = null,
 
-    /**
-     * Connection password (if auth_required is set).
-     */
-    private ?string $password;
+        /**
+         * Connection password (if auth_required is set).
+         */
+        private ?string $password = null,
 
-    /**
-     * Optional client name.
-     */
-    private ?string $name;
+        /**
+         * Optional client name.
+         */
+        private ?string $name = null,
 
-    /**
-     * Sending 0 (or absent) indicates client supports original protocol.
-     * Sending 1 indicates that the client supports dynamic reconfiguration of
-     * cluster topology changes by asynchronously receiving INFO messages with known servers it can reconnect to.
-     */
-    private ?int $protocol;
+        /**
+         * Sending 0 (or absent) indicates client supports original protocol.
+         * Sending 1 indicates that the client supports dynamic reconfiguration of
+         * cluster topology changes by asynchronously receiving INFO messages with known servers it can reconnect to.
+         */
+        private ?int    $protocol = 0,
 
-    /**
-     * If set to true, the server (version 1.2.0+) will not send originating messages from this
-     * connection to its own subscriptions. Clients should set this to true only for server supporting
-     * this feature, which is when proto in the INFO protocol is set to at least 1.
-     */
-    private bool $echo;
-
-    public function __construct()
+        /**
+         * If set to true, the server (version 1.2.0+) will not send originating messages from this
+         * connection to its own subscriptions. Clients should set this to true only for server supporting
+         * this feature, which is when proto in the INFO protocol is set to at least 1.
+         */
+        private bool    $echo = false,
+    )
     {
-        $this->verbose = true;
-        $this->pedantic = true;
-        $this->tlsRequired = false;
-        $this->authToken = null;
-        $this->user = null;
-        $this->password = null;
-        $this->name = null;
-        $this->protocol = 0;
-        $this->echo = false;
     }
 
     public function isVerbose(): bool
@@ -164,7 +155,7 @@ final class ClientConnectionOptions
     }
 
     /**
-     * @return  array<string, bool|int|string|null>
+     * @return array<string, mixed>
      */
     public function toArray(): array
     {

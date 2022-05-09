@@ -17,11 +17,6 @@ final class StreamTransport implements NatsTransportInterface
     private $stream;
 
     /**
-     * @var int<0, max>,
-     */
-    private int $chunkSize;
-
-    /**
      * Close will close the connection to the server.
      */
     public function close(): void
@@ -30,13 +25,14 @@ final class StreamTransport implements NatsTransportInterface
         $this->stream = null;
     }
 
-    /**
-     * @param int<0, max> $chunkSize
-     */
-    public function __construct(int $chunkSize = 1500)
+    public function __construct(
+        /**
+         * @var int<0, max>,
+         */
+        private int $chunkSize = 1500
+    )
     {
         $this->stream = null;
-        $this->chunkSize = $chunkSize;
     }
 
     public function isClosed(): bool

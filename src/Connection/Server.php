@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace EJTJ3\PhpNats\Connection;
 
 use EJTJ3\PhpNats\Constant\Nats;
+use InvalidArgumentException;
 use Nyholm\Dsn\Configuration\Url;
 use Nyholm\Dsn\DsnParser;
 
@@ -51,7 +52,7 @@ final class Server
 
     public function isTls(): bool
     {
-        return $this->getScheme() === 'tls';
+        return $this->getScheme() === 'tls' || $this->getScheme() === 'https';
     }
 
     private function addDefaultScheme(string $url): string
@@ -60,8 +61,8 @@ final class Server
 
         if (count($schemeParts) === 1) {
             $url = sprintf('nats://%s', $url);
-        } elseif (!in_array($schemeParts[0], ['nats', 'tls'], true)) {
-            throw new \InvalidArgumentException('Scheme is not supported');
+        } elseif (!in_array($schemeParts[0], ['nats', 'tls', 'https'], true)) {
+            throw new InvalidArgumentException('Scheme is not supported');
         }
 
         return $url;

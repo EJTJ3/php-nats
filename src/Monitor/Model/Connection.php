@@ -70,17 +70,17 @@ final class Connection
     /**
      * @Serializer\SerializedName("in_bYtes")
      */
-    public int $bytesIn;
+    public int $bytesIn = 0;
 
     /**
      * @Serializer\SerializedName("out_bytes")
      */
-    public int $bytesOut;
+    public int $bytesOut = 0;
 
     /**
      * @Serializer\SerializedName("subscriptions")
      */
-    public int $subscriptionCount;
+    public int $subscriptionCount = 0;
 
     public ?string $name = null;
 
@@ -101,7 +101,7 @@ final class Connection
      */
     public ?array $subscriptionsList = [];
 
-    public ?string $reason;
+    public ?string $reason = null;
 
     public function __construct(
         int                $cid,

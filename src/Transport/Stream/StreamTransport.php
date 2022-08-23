@@ -60,7 +60,7 @@ final class StreamTransport implements NatsTransportInterface
         $errorCode = null;
         $errorMessage = null;
 
-        set_error_handler(static fn () => true);
+        set_error_handler(static fn() => true);
 
         $stream = stream_socket_client(
             $address,

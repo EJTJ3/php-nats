@@ -103,6 +103,8 @@ final class Connection
 
     public ?string $reason = null;
 
+    public ?string $authorizedUser = null;
+
     public function __construct(
         int                $cid,
         string             $kind,
@@ -126,7 +128,8 @@ final class Connection
         string             $version,
         ?string            $reason,
         ?array             $subscriptionsList = [],
-        ?string            $tlsCipherSuite = null
+        ?string            $tlsCipherSuite = null,
+        ?string            $authorizedUser = null
     )
     {
         $this->tls_version = null;
@@ -153,5 +156,6 @@ final class Connection
         $this->version = $version;
         $this->reason = $reason;
         $this->tlsCipherSuite = $tlsCipherSuite;
+        $this->authorizedUser = $authorizedUser;
     }
 }

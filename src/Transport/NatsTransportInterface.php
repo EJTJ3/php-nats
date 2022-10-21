@@ -18,8 +18,5 @@ interface NatsTransportInterface
 
     public function write(string $payload): void;
 
-    /**
-     * @return string|false
-     */
-    public function receive(int $length = 0);
+    public function receive(int $length = 0): bool|string;
 }

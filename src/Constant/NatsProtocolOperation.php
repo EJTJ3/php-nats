@@ -9,7 +9,7 @@ namespace EJTJ3\PhpNats\Constant;
  *
  * @see https://docs.nats.io/reference/reference-protocols/nats-protocol
  */
-final class NatsProtocolOperation
+enum NatsProtocolOperation: string
 {
     /**
      * Sent by server
@@ -17,14 +17,14 @@ final class NatsProtocolOperation
      *
      * @see https://docs.nats.io/reference/reference-protocols/nats-protocol#info
      */
-    public const INFO = 'INFO';
+    case Info = 'INFO';
 
     /**
      * Sent to client after initial TCP/IP connection.
      *
      * @see https://docs.nats.io/reference/reference-protocols/nats-protocol#connect
      */
-    public const CONNECT = 'CONNECT';
+    case Connect = 'CONNECT';
 
     /**
      * Sent by client
@@ -32,7 +32,7 @@ final class NatsProtocolOperation
      *
      * @see https://docs.nats.io/reference/reference-protocols/nats-protocol#pub
      */
-    public const PUB = 'PUB';
+    case Pub = 'PUB';
 
     /**
      * Sent by client
@@ -40,7 +40,7 @@ final class NatsProtocolOperation
      *
      * @see https://docs.nats.io/reference/reference-protocols/nats-protocol#sub
      */
-    public const SUB = 'SUB';
+    case Sub = 'SUB';
 
     /**
      * Sent by client
@@ -48,7 +48,7 @@ final class NatsProtocolOperation
      *
      * @see https://docs.nats.io/reference/reference-protocols/nats-protocol#unsub
      */
-    public const UNSUB = 'UNSUB';
+    case Unsub = 'UNSUB';
 
     /**
      * Sent by server
@@ -56,21 +56,21 @@ final class NatsProtocolOperation
      *
      * @see https://docs.nats.io/reference/reference-protocols/nats-protocol#msg
      */
-    public const MSG = 'MSG';
+    case Msg = 'MSG';
 
     /**
      * PING keep-alive message.
      *
      * @see https://docs.nats.io/reference/reference-protocols/nats-protocol#pingpong
      */
-    public const PING = 'PING';
+    case Ping = 'PING';
 
     /**
      * PONG keep-alive response.
      *
      * @see https://docs.nats.io/reference/reference-protocols/nats-protocol#pingpong
      */
-    public const PONG = 'PONG';
+    case Pong = 'PONG';
 
     /**
      * Sent by Server
@@ -78,7 +78,7 @@ final class NatsProtocolOperation
      *
      * @see https://docs.nats.io/reference/reference-protocols/nats-protocol#okerr
      */
-    public const ACK = '+OK';
+    case Ack = '+OK';
 
     /**
      * Sent by Server
@@ -86,18 +86,10 @@ final class NatsProtocolOperation
      *
      * @see https://docs.nats.io/reference/reference-protocols/nats-protocol#okerr
      */
-    public const ERR = '-ERR';
+    case Err = '-ERR';
 
-    public const AVAILABLE_OPERATIONS = [
-        self::INFO,
-        self::CONNECT,
-        self::PUB,
-        self::SUB,
-        self::UNSUB,
-        self::MSG,
-        self::PING,
-        self::PONG,
-        self::ACK,
-        self::ERR,
-    ];
+    public function isOperation(string $value): bool
+    {
+        return $this->value === $value;
+    }
 }

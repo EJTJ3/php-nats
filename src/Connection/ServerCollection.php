@@ -14,7 +14,7 @@ final class ServerCollection
     private array $servers;
 
     /**
-     * @param array<Server> $servers
+     * @param Server[] $servers
      */
     public function __construct(array $servers, bool $randomize = false)
     {

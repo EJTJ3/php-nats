@@ -28,7 +28,7 @@ final class NatsConnectionOption implements NatsConnectionOptionInterface
      * @param array<int, string|Server>|Server|string|ServerCollection $servers
      */
     public function __construct(
-        $servers = [],
+        array|Server|string|ServerCollection $servers = [],
         ?string $name = null,
         int $timeout = 5,
         bool $randomize = false

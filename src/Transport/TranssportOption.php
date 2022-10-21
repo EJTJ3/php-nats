@@ -6,17 +6,11 @@ namespace EJTJ3\PhpNats\Transport;
 
 final class TranssportOption implements TransportOptionsInterface
 {
-    private int $timeout;
-
-    private string $host;
-
-    private int $port;
-
-    public function __construct(string $host, int $port, int $timeout)
-    {
-        $this->timeout = $timeout;
-        $this->host = $host;
-        $this->port = $port;
+    public function __construct(
+        private readonly string $host,
+        private readonly int $port,
+        private readonly int $timeout
+    ) {
     }
 
     public function getTimeout(): int

@@ -7,13 +7,13 @@ namespace EJTJ3\PhpNats\Constant;
 /**
  * @author Evert Jan Hakvoort <evertjan@hakvoort.io>
  */
-final class Nats
+abstract class Nats
 {
-    public const DEFAULT_PORT = 4222;
+    final public const DEFAULT_PORT = 4222;
 
-    public const CR_LF = "\r\n";
+    final public const CR_LF = "\r\n";
 
-    public const LANG = 'php';
+    final public const LANG = 'php';
 
-    public const VERSION = '0.0.1';
+    final public const VERSION = '0.0.1';
 }

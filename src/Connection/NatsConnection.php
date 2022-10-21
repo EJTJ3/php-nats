@@ -9,7 +9,6 @@ use EJTJ3\PhpNats\Constant\NatsProtocolOperation;
 use EJTJ3\PhpNats\Encoder\EncoderInterface;
 use EJTJ3\PhpNats\Encoder\JsonEncoder;
 use EJTJ3\PhpNats\Exception\NatsConnectionRefusedException;
-use EJTJ3\PhpNats\Exception\NatsInvalidOperationException;
 use EJTJ3\PhpNats\Exception\NatsInvalidResponseException;
 use EJTJ3\PhpNats\Exception\TransportAlreadyConnectedException;
 use EJTJ3\PhpNats\Logger\NullLogger;
@@ -18,6 +17,7 @@ use EJTJ3\PhpNats\Transport\NatsTransportInterface;
 use EJTJ3\PhpNats\Transport\Stream\StreamTransport;
 use EJTJ3\PhpNats\Transport\TranssportOption;
 use EJTJ3\PhpNats\Util\StringUtil;
+use Exception;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 
@@ -42,22 +42,10 @@ final class NatsConnection implements LoggerAwareInterface
 
     public function __construct(
         NatsConnectionOptionInterface $connectionOptions,
-        NatsTransportInterface $transport = null,
-        EncoderInterface $encoder = null,
-        LoggerInterface $logger = null
+        NatsTransportInterface $transport = new StreamTransport(),
+        EncoderInterface $encoder = new JsonEncoder(),
+        LoggerInterface $logger = new NullLogger()
     ) {
-        if ($encoder === null) {
-            $encoder = new JsonEncoder();
-        }
-
-        if ($logger === null) {
-            $logger = new NullLogger();
-        }
-
-        if ($transport === null) {
-            $transport = new StreamTransport();
-        }
-
         $this->transport = $transport;
         $this->encoder = $encoder;
         $this->connectionOptions = $connectionOptions;
@@ -67,6 +55,9 @@ final class NatsConnection implements LoggerAwareInterface
         $this->connected = false;
     }
 
+    /**
+     * @throws Exception
+     */
     public function connect(): void
     {
         if ($this->transport->isConnected()) {
@@ -82,7 +73,7 @@ final class NatsConnection implements LoggerAwareInterface
 
             try {
                 $this->transport->connect($transportOption);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->logger->error($e->getMessage());
 
                 continue;
@@ -125,6 +116,9 @@ final class NatsConnection implements LoggerAwareInterface
         $this->transport->close();
     }
 
+    /**
+     * @throws Exception
+     */
     public function publish(string $subject, string $payload): void
     {
         if ($this->isConnected() === false) {
@@ -133,26 +127,32 @@ final class NatsConnection implements LoggerAwareInterface
 
         $message = sprintf('%s %s', $subject, strlen($payload));
 
-        $this->doWrite(NatsProtocolOperation::PUB, $message . Nats::CR_LF . $payload);
+        $this->doWrite(NatsProtocolOperation::Pub, $message . Nats::CR_LF . $payload);
     }
 
     private function isErrorResponse(string $response): bool
     {
-        return substr($response, 0, 4) === NatsProtocolOperation::ERR;
+        return NatsProtocolOperation::Err->isOperation(substr($response, 0, 4));
     }
 
+    /**
+     * @throws Exception
+     */
     public function ping(): void
     {
-        $this->doWrite(NatsProtocolOperation::PING);
+        $this->doWrite(NatsProtocolOperation::Ping, "ping");
     }
 
+    /**
+     * @throws Exception
+     */
     public function validatePing(): void
     {
         $this->ping();
 
         $pingResponse = $this->getResponse();
 
-        if ($pingResponse !== NatsProtocolOperation::PONG) {
+        if (!NatsProtocolOperation::Pong->isOperation($pingResponse)) {
             throw new NatsInvalidResponseException('Did not receive a pong from the server');
         }
     }
@@ -162,6 +162,9 @@ final class NatsConnection implements LoggerAwareInterface
         return $this->serverInfo;
     }
 
+    /**
+     * @throws Exception
+     */
     private function doConnect(): void
     {
         if ($this->currentServer === null) {
@@ -179,12 +182,12 @@ final class NatsConnection implements LoggerAwareInterface
             $connectionOptions->setPassword($server->getPassword());
         }
 
-        $this->doWrite(NatsProtocolOperation::CONNECT, $connectionOptions->toArray());
+        $this->doWrite(NatsProtocolOperation::Connect, $connectionOptions->toArray());
 
         if ($connectionOptions->isVerbose() === true) {
             $connectResponse = $this->getResponse();
 
-            if ($connectResponse !== NatsProtocolOperation::ACK) {
+            if (NatsProtocolOperation::Ack->isOperation($connectResponse) === false) {
                 throw new NatsInvalidResponseException('Nats did not send a normal response');
             }
         }
@@ -196,13 +199,13 @@ final class NatsConnection implements LoggerAwareInterface
 
         [$operation, $data] = explode(' ', $rawData);
 
-        if ($operation !== NatsProtocolOperation::INFO) {
+        if (!NatsProtocolOperation::Info->isOperation($operation)) {
             throw new NatsInvalidResponseException('Server information is not correct');
         }
 
         $data = $this->encoder->decode($data);
 
-        $serverInfo = new ServerInfo($data);
+        $serverInfo = ServerInfo::fromData($data);
 
         $this->serverInfo = $serverInfo;
 
@@ -230,18 +233,16 @@ final class NatsConnection implements LoggerAwareInterface
 
     /**
      * @param array<string, mixed>|string|null $payload
+     *
+     * @throws Exception
      */
-    private function doWrite(string $operation, $payload = null): void
+    private function doWrite(NatsProtocolOperation $operation, array|string $payload): void
     {
-        if (!in_array($operation, NatsProtocolOperation::AVAILABLE_OPERATIONS, true)) {
-            throw NatsInvalidOperationException::withOperation($operation);
-        }
-
         if (!is_string($payload)) {
             $payload = $this->encoder->encode($payload);
         }
 
-        $payload = sprintf('%s %s%s', $operation, $payload, Nats::CR_LF);
+        $payload = sprintf('%s %s%s', $operation->value, $payload, Nats::CR_LF);
 
         $this->transport->write($payload);
     }

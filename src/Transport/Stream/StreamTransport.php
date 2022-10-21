@@ -16,11 +16,15 @@ final class StreamTransport implements NatsTransportInterface
      */
     private $stream;
 
-    /**
-     * @var int<0, max>,
-     */
-    private int $chunkSize;
-
+    public function __construct(
+        /**
+         * @var int<0, max> $chunkSize
+         */
+        private readonly int $chunkSize = 1500,
+    ) {
+        $this->stream = null;
+    }
+    
     /**
      * Close will close the connection to the server.
      */
@@ -28,15 +32,6 @@ final class StreamTransport implements NatsTransportInterface
     {
         fclose($this->getStream());
         $this->stream = null;
-    }
-
-    /**
-     * @param int<0, max> $chunkSize
-     */
-    public function __construct(int $chunkSize = 1500)
-    {
-        $this->stream = null;
-        $this->chunkSize = $chunkSize;
     }
 
     public function isClosed(): bool
@@ -60,7 +55,7 @@ final class StreamTransport implements NatsTransportInterface
         $errorCode = null;
         $errorMessage = null;
 
-        set_error_handler(static fn () => true);
+        set_error_handler(static fn() => true);
 
         $stream = stream_socket_client(
             $address,
@@ -94,8 +89,8 @@ final class StreamTransport implements NatsTransportInterface
         if (!stream_socket_enable_crypto(
             $this->getStream(),
             true,
-            STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT)
-        ) {
+            STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT
+        )) {
             throw new NatsConnectionRefusedException('Failed to connect: Error negotiating crypto');
         }
 
@@ -109,7 +104,11 @@ final class StreamTransport implements NatsTransportInterface
     {
         $length = strlen($payload);
 
-        while (true) {
+        if ($length === 0) {
+            return;
+        }
+
+        do {
             $written = @fwrite($this->getStream(), $payload);
 
             if ($written === false) {
@@ -124,32 +123,30 @@ final class StreamTransport implements NatsTransportInterface
 
             if ($length > 0) {
                 $payload = substr($payload, (0 - $length));
-            } else {
-                break;
             }
-        }
+        } while ($length > 0);
     }
 
     public function receive(int $length = 0): string
     {
-        if ($length > 0) {
-            $chunkSize = $this->chunkSize;
-            $line = null;
-            $receivedBytes = 0;
+        if ($length <= 0) {
+            return fgets($this->getStream());
+        }
 
-            while ($receivedBytes < $length) {
-                $bytesLeft = ($length - $receivedBytes);
+        $chunkSize = $this->chunkSize;
+        $line = "";
+        $receivedBytes = 0;
 
-                if ($bytesLeft < $this->chunkSize) {
-                    $chunkSize = $bytesLeft;
-                }
+        while ($receivedBytes < $length) {
+            $bytesLeft = ($length - $receivedBytes);
 
-                $readChunk = fread($this->getStream(), $chunkSize);
-                $receivedBytes += strlen($readChunk);
-                $line .= $readChunk;
+            if ($bytesLeft < $this->chunkSize) {
+                $chunkSize = $bytesLeft;
             }
-        } else {
-            $line = fgets($this->getStream());
+
+            $readChunk = fread($this->getStream(), $chunkSize);
+            $receivedBytes += strlen($readChunk);
+            $line .= $readChunk;
         }
 
         return $line;

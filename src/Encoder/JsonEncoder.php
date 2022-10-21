@@ -6,10 +6,7 @@ namespace EJTJ3\PhpNats\Encoder;
 
 final class JsonEncoder implements EncoderInterface
 {
-    /**
-     * @param mixed $payload
-     */
-    public function encode($payload): string
+    public function encode(object|string|array $payload): string
     {
         return json_encode($payload);
     }

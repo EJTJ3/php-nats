@@ -9,7 +9,7 @@ use InvalidArgumentException;
 final class ServerCollection
 {
     /**
-     * @var Server[]
+     * @var array<int, Server>
      */
     private array $servers;
 

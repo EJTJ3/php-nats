@@ -16,11 +16,8 @@
         "php" : "^8.1",
         "nyholm/dsn": "^2.0",
         "psr/log": "^1.1",
-        "ext-json": "*",
-        "php-http/discovery": "^1.14",
-        "psr/http-client": "^1.0.1",
-        "psr/http-factory": "^1.0.1",
-        "jms/serializer": "^3.18"
+        "jms/serializer": "^3.18",
+        "friendsofphp/well-known-implementations": "^1.0"
     },
     "require-dev": {
         "guzzlehttp/guzzle": "^7.4",
@@ -28,5 +25,10 @@
     },
     "scripts": {
         "test": "vendor/bin/phpunit"
+    },
+    "config": {
+        "allow-plugins": {
+            "friendsofphp/well-known-implementations": true
+        }
     }
 }

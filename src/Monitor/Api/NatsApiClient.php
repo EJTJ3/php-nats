@@ -10,6 +10,7 @@ use EJTJ3\PhpNats\Connection\ServerCollection;
 use EJTJ3\PhpNats\Monitor\Model\ConnectionRequest;
 use EJTJ3\PhpNats\Monitor\Model\ConnectionResponse;
 use EJTJ3\PhpNats\Monitor\RequestBuilder;
+use FriendsOfPHP\WellKnownImplementations\WellKnownPsr18Client;
 use Http\Discovery\NotFoundException;
 use Http\Discovery\Psr18ClientDiscovery;
 use JMS\Serializer\SerializerInterface;
@@ -22,29 +23,12 @@ final class NatsApiClient
 {
     private const ROUTE_CONNZ = 'connz';
 
-    private RequestBuilder $requestBuilder;
-
-    private ClientInterface $client;
-
-    private SerializerInterface $serializer;
-
     public function __construct(
-        SerializerInterface $serializer,
-        ClientInterface     $client = null,
-        RequestBuilder      $requestBuilder = null
+        private readonly SerializerInterface $serializer,
+        private readonly ClientInterface     $client = new WellKnownPsr18Client(),
+        private readonly RequestBuilder      $requestBuilder = new RequestBuilder()
     )
     {
-        if ($client === null) {
-            try {
-                $client = Psr18ClientDiscovery::find();
-            } catch (NotFoundException $e) {
-                throw new LogicException('Could not find any installed HTTP clients. Try installing a package for this list: https://packagist.org/providers/psr/http-client-implementation', 0, $e);
-            }
-        }
-
-        $this->requestBuilder = $requestBuilder ?: new RequestBuilder();
-        $this->client = $client;
-        $this->serializer = $serializer;
     }
 
     /**

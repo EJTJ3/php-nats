@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EJTJ3\PhpNats\Monitor;
 
+use FriendsOfPHP\WellKnownImplementations\WellKnownPsr17Factory;
 use Http\Discovery\Psr17FactoryDiscovery;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
@@ -28,22 +29,10 @@ final class RequestBuilder
         StreamFactoryInterface  $streamFactory = null
     )
     {
-        if ($requestFactory === null || $streamFactory === null) {
-            if (!class_exists(Psr17Factory::class) && !class_exists(Psr17FactoryDiscovery::class)) {
-                throw new LogicException('You cannot use the "%s" as no PSR-17 request factory have been provided. Try running "composer require nyholm/psr7.');
-            }
+        $psr17Factory = new WellKnownPsr17Factory();
 
-            try {
-                $psr17Factory = class_exists(Psr17Factory::class, false) ? new Psr17Factory() : null;
-                $requestFactory = $requestFactory ?? $psr17Factory ?? Psr17FactoryDiscovery::findRequestFactory();
-                $streamFactory = $streamFactory ?? $psr17Factory ?? Psr17FactoryDiscovery::findStreamFactory();
-            } catch (NotFoundException $e) {
-                throw new LogicException('You cannot use the "%s" as no PSR-17 request factory have been provided. Try running "composer require nyholm/psr7".', 0, $e);
-            }
-        }
-
-        $this->streamFactory = $streamFactory;
-        $this->requestFactory = $requestFactory;
+        $this->streamFactory = $requestFactory ?? $psr17Factory;
+        $this->requestFactory = $streamFactory ?? $psr17Factory;
     }
 
     /**
@@ -55,10 +44,11 @@ final class RequestBuilder
     public function create(
         string $method,
         string $uri,
-        array $headers = [],
-        array $query = [],
-        $body = null
-    ): RequestInterface {
+        array  $headers = [],
+        array  $query = [],
+               $body = null
+    ): RequestInterface
+    {
         if (count($query) !== 0) {
             $uri .= '?' . http_build_query($query);
         }

@@ -5,11 +5,8 @@ declare(strict_types=1);
 namespace EJTJ3\PhpNats\Monitor;
 
 use FriendsOfPHP\WellKnownImplementations\WellKnownPsr17Factory;
-use Http\Discovery\Psr17FactoryDiscovery;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
-use Http\Discovery\Exception\NotFoundException;
-use LogicException;
 use Psr\Http\Message\RequestInterface;
 use Psr\Http\Message\StreamInterface;
 
@@ -20,35 +17,25 @@ use Psr\Http\Message\StreamInterface;
  */
 final class RequestBuilder
 {
-    private RequestFactoryInterface $requestFactory;
-
-    private StreamFactoryInterface $streamFactory;
-
     public function __construct(
-        RequestFactoryInterface $requestFactory = null,
-        StreamFactoryInterface  $streamFactory = null
+        private readonly RequestFactoryInterface $requestFactory = new WellKnownPsr17Factory(),
+        private readonly StreamFactoryInterface  $streamFactory = new WellKnownPsr17Factory()
     )
     {
-        $psr17Factory = new WellKnownPsr17Factory();
-
-        $this->streamFactory = $requestFactory ?? $psr17Factory;
-        $this->requestFactory = $streamFactory ?? $psr17Factory;
     }
 
     /**
      * Creates a new PSR-7 request.
      *
      * @param array $headers name => value or name=>[value]
-     * @param StreamInterface|string|null $body request body
      */
     public function create(
         string $method,
         string $uri,
         array  $headers = [],
         array  $query = [],
-               $body = null
-    ): RequestInterface
-    {
+        StreamInterface|string $body = null
+    ): RequestInterface {
         if (count($query) !== 0) {
             $uri .= '?' . http_build_query($query);
         }

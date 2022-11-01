@@ -28,7 +28,7 @@
     },
     "config": {
         "allow-plugins": {
-            "friendsofphp/well-known-implementations": true
+            "friendsofphp/well-known-implementations": false
         }
     }
 }

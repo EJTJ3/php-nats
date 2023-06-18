@@ -8,6 +8,6 @@ final class StringUtil
 {
     public static function isEmpty(?string $value): bool
     {
-        return strlen(trim($value ?? '')) === 0;
+        return trim($value ?? '') === ';
     }
 }

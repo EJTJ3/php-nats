@@ -25,9 +25,7 @@ final class ServerCollection
         }
 
         if ($randomize === true) {
-            if (shuffle($servers) === false) {
-                throw new InvalidArgumentException('Servers could not be randomised.');
-            }
+            shuffle($servers);
         }
 
         foreach ($servers as $server) {

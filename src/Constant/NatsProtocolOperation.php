@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace EJTJ3\PhpNats\Constant;
 
 /**
- * @author Evert Jan Hakvoort <evertjan@hakvoort.io>
- *
  * @see https://docs.nats.io/reference/reference-protocols/nats-protocol
  */
 enum NatsProtocolOperation: string
@@ -57,6 +55,12 @@ enum NatsProtocolOperation: string
      * @see https://docs.nats.io/reference/reference-protocols/nats-protocol#msg
      */
     case Msg = 'MSG';
+
+    /**
+     * Sent by server
+     * Delivers a message payload to a subscriber with NATS headers.
+     */
+    case HEADER_MSG = 'HMSG';
 
     /**
      * PING keep-alive message.

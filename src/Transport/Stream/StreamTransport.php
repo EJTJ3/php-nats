@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EJTJ3\PhpNats\Transport\Stream;
 
+use EJTJ3\PhpNats\Constant\Nats;
 use EJTJ3\PhpNats\Exception\NatsConnectionRefusedException;
 use EJTJ3\PhpNats\Transport\NatsTransportInterface;
 use EJTJ3\PhpNats\Transport\TransportOptionsInterface;
@@ -20,11 +21,11 @@ final class StreamTransport implements NatsTransportInterface
         /**
          * @var int<0, max> $chunkSize
          */
-        private readonly int $chunkSize = 1500,
+        private readonly int $chunkSize = 1024,
     ) {
         $this->stream = null;
     }
-    
+
     /**
      * Close will close the connection to the server.
      */
@@ -55,7 +56,7 @@ final class StreamTransport implements NatsTransportInterface
         $errorCode = null;
         $errorMessage = null;
 
-        set_error_handler(static fn() => true);
+        set_error_handler(static fn () => true);
 
         $stream = stream_socket_client(
             $address,
@@ -109,7 +110,7 @@ final class StreamTransport implements NatsTransportInterface
         }
 
         do {
-            $written = @fwrite($this->getStream(), $payload);
+            $written = @fwrite($this->getStream(), $payload, $this->chunkSize);
 
             if ($written === false) {
                 throw new NatsStreamWriteException('Error sending data');
@@ -122,34 +123,14 @@ final class StreamTransport implements NatsTransportInterface
             $length -= $written;
 
             if ($length > 0) {
-                $payload = substr($payload, (0 - $length));
+                $payload = substr($payload, 0 - $length);
             }
         } while ($length > 0);
     }
 
-    public function receive(int $length = 0): string
+    public function read(int $length, string $lineEnding = Nats::CR_LF): false|string
     {
-        if ($length <= 0) {
-            return fgets($this->getStream());
-        }
-
-        $chunkSize = $this->chunkSize;
-        $line = "";
-        $receivedBytes = 0;
-
-        while ($receivedBytes < $length) {
-            $bytesLeft = ($length - $receivedBytes);
-
-            if ($bytesLeft < $this->chunkSize) {
-                $chunkSize = $bytesLeft;
-            }
-
-            $readChunk = fread($this->getStream(), $chunkSize);
-            $receivedBytes += strlen($readChunk);
-            $line .= $readChunk;
-        }
-
-        return $line;
+        return stream_get_line($this->getStream(), $length, $lineEnding);
     }
 
     /**

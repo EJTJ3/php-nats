@@ -139,6 +139,8 @@ final class ClientConnectionOptionsTest extends TestCase
             'version' => Nats::VERSION,
             'protocol' => 1,
             'echo' => true,
+            'no_responders' => true,
+            'headers' => true,
         ];
 
         $options->setEcho(true);
@@ -150,6 +152,8 @@ final class ClientConnectionOptionsTest extends TestCase
         $options->setAuthToken('authToken');
         $options->setTlsRequired(true);
         $options->setPedantic(true);
+        $options->setNoResponders(true);
+        $options->setHeaders(true);
 
         $this->assertSame($expected, $options->toArray());
     }

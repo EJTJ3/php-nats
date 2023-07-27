@@ -29,7 +29,7 @@ final class NatsConnectionOption implements NatsConnectionOptionInterface
      */
     public function __construct(
         array|Server|string|ServerCollection $servers = [],
-        ?string $name = null,
+        string $name = null,
         int $timeout = 5,
         bool $randomize = false
     ) {
@@ -38,26 +38,28 @@ final class NatsConnectionOption implements NatsConnectionOptionInterface
         }
 
         if ($servers instanceof ServerCollection) {
-            $serverCollection = $servers;
-        } elseif ($servers instanceof Server) {
-            $serverCollection = [$servers];
-        } elseif (is_array($servers)) {
-            $serverCollection = array_map(static function ($server): Server {
-                if ($server instanceof Server) {
-                    return $server;
-                }
-
-                if (is_string($server) && StringUtil::isEmpty($server) === false) {
-                    return new Server($server);
-                }
-
-                throw new InvalidArgumentException('Server must be of type string');
-            }, $servers);
+            $this->serverCollection = $servers;
         } else {
-            throw new InvalidArgumentException('Server must be of type string');
-        }
+            if ($servers instanceof Server) {
+                $serverCollection = [$servers];
+            } elseif (is_array($servers)) {
+                $serverCollection = array_map(static function ($server): Server {
+                    if ($server instanceof Server) {
+                        return $server;
+                    }
 
-        $this->serverCollection = new ServerCollection($serverCollection, $randomize);
+                    if (is_string($server) && StringUtil::isEmpty($server) === false) {
+                        return new Server($server);
+                    }
+
+                    throw new InvalidArgumentException('Server must be of type string');
+                }, $servers);
+            } else {
+                throw new InvalidArgumentException('Server must be of type string');
+            }
+
+            $this->serverCollection = new ServerCollection($serverCollection, $randomize);
+        }
 
         $this->name = $name;
         $this->timeout = $timeout;

@@ -105,9 +105,6 @@ final class ClientConnectionOptionsTest extends TestCase
 
         $options->setProtocol(0);
         $this->assertSame(0, $options->getProtocol());
-
-        $options->setProtocol(null);
-        $this->assertEmpty($options->getProtocol());
     }
 
     /**

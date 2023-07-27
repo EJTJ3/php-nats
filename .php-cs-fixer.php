@@ -17,5 +17,8 @@ return (new PhpCsFixer\Config())
         'no_superfluous_phpdoc_tags' => true,
         'phpdoc_align' => false,
         'class_attributes_separation' => true,
+        'global_namespace_import' => [
+            'import_classes' => true,
+        ],
     ])
     ->setFinder($finder);

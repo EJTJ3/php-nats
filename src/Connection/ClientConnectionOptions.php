@@ -15,17 +15,17 @@ final class ClientConnectionOptions
         /**
          * Turns on +OK protocol acknowledgements.
          */
-        private bool    $verbose = true,
+        private bool $verbose = false,
 
         /**
          * Turns on additional strict format checking, e.g. for properly formed subjects.
          */
-        private bool    $pedantic = true,
+        private bool $pedantic = true,
 
         /**
          * Indicates whether the client requires an SSL connection.
          */
-        private bool    $tlsRequired = false,
+        private bool $tlsRequired = false,
 
         /**
          * Client authorization token (if auth_required is set).
@@ -52,16 +52,25 @@ final class ClientConnectionOptions
          * Sending 1 indicates that the client supports dynamic reconfiguration of
          * cluster topology changes by asynchronously receiving INFO messages with known servers it can reconnect to.
          */
-        private ?int    $protocol = 0,
+        private int $protocol = 0,
 
         /**
          * If set to true, the server (version 1.2.0+) will not send originating messages from this
          * connection to its own subscriptions. Clients should set this to true only for server supporting
          * this feature, which is when proto in the INFO protocol is set to at least 1.
          */
-        private bool    $echo = false,
-    )
-    {
+        private bool $echo = false,
+
+        /**
+         * Enable quick replies for cases where a request is sent to a topic with no responders.
+         */
+        private bool $noResponders = false,
+
+        /**
+         * Whether the client supports headers.
+         */
+        private bool $headers = false,
+    ) {
     }
 
     public function isVerbose(): bool
@@ -139,7 +148,7 @@ final class ClientConnectionOptions
         return $this->protocol;
     }
 
-    public function setProtocol(?int $protocol): void
+    public function setProtocol(int $protocol): void
     {
         $this->protocol = $protocol;
     }
@@ -152,6 +161,26 @@ final class ClientConnectionOptions
     public function setEcho(bool $echo): void
     {
         $this->echo = $echo;
+    }
+
+    public function isNoResponders(): bool
+    {
+        return $this->noResponders;
+    }
+
+    public function setNoResponders(bool $noResponders): void
+    {
+        $this->noResponders = $noResponders;
+    }
+
+    public function isHeaders(): bool
+    {
+        return $this->headers;
+    }
+
+    public function setHeaders(bool $headers): void
+    {
+        $this->headers = $headers;
     }
 
     /**
@@ -171,6 +200,8 @@ final class ClientConnectionOptions
             'version' => Nats::VERSION,
             'protocol' => $this->protocol,
             'echo' => $this->echo,
+            'no_responders' => $this->noResponders,
+            'headers' => $this->headers,
         ];
     }
 }

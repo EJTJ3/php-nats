@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace EJTJ3\PhpNats\Transport;
 
+use EJTJ3\PhpNats\Constant\Nats;
+
 interface NatsTransportInterface
 {
     public function connect(TransportOptionsInterface $option): void;
@@ -18,5 +20,5 @@ interface NatsTransportInterface
 
     public function write(string $payload): void;
 
-    public function receive(int $length = 0): bool|string;
+    public function read(int $length, string $lineEnding = Nats::CR_LF): bool|string;
 }

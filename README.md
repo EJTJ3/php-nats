@@ -9,12 +9,6 @@ You can install the package using the [Composer](https://getcomposer.org/) packa
 ```sh
 composer require ejtj3/php-nats
 ```
-
-## TODO
-- [ ] Autodiscovery
-- [ ] TLS authentication
-- [ ] Auto reconnect
-
 ## Setup a nats connection
 
 ```php

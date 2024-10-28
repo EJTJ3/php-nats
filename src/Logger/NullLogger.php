@@ -9,7 +9,7 @@ use Psr\Log\LoggerInterface;
 
 final class NullLogger extends AbstractLogger implements LoggerInterface
 {
-    public function log($level, $message, array $context = []): void
+    public function log($level, string|\Stringable $message, array $context = []): void
     {
     }
 }

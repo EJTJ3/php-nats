@@ -134,7 +134,7 @@ final class ServerInfo implements NatsResponseInterface
         return $this->maxPayload;
     }
 
-    public function getClientId(): int
+    public function getClientId(): ?int
     {
         return $this->clientId;
     }

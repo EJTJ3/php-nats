@@ -17,10 +17,11 @@ final class JsonEncoder implements EncoderInterface
     }
 
     /**
-     * @return array<string, mixed>
+     * @return array<mixed>
      */
     public function decode(string $payload): array
     {
+        // @phpstan-ignore-next-line
         return json_decode($payload, true);
     }
 }

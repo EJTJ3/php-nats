@@ -26,7 +26,7 @@ final class HMsg implements MessageInterface
         // The size of the headers section in bytes including the ␍␊␍␊ delimiter before the payload.
         public int $headerBytes,
         // The total size of headers and payload sections in bytes.
-        public int $totalBytes
+        public int $totalBytes,
     ) {
         $this->headers = [];
         $this->payload = null;
@@ -66,7 +66,7 @@ final class HMsg implements MessageInterface
             return match (count($parts)) {
                 4 => new self($parts[0], $parts[1], null, (int) $parts[2], (int) $parts[3]),
                 5 => new self($parts[0], $parts[1], $parts[2], (int) $parts[3], (int) $parts[4]),
-                default => throw new InvalidArgumentException('Invalid msg')
+                default => throw new InvalidArgumentException('Invalid msg'),
             };
         } catch (Exception $e) {
             // Add own exception

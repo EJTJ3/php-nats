@@ -14,7 +14,7 @@ final class StringUtil
     /**
      * @return array<string>
      */
-    public static function explode(string $string, int $limit = null): array
+    public static function explode(string $string, ?int $limit = null): array
     {
         if ($limit === null) {
             $parts = explode(' ', $string);

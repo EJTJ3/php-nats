@@ -40,7 +40,7 @@ final class NatsConnection implements LoggerAwareInterface
         private readonly NatsConnectionOptionInterface $connectionOptions,
         private readonly NatsTransportInterface $transport = new StreamTransport(),
         private readonly EncoderInterface $encoder = new JsonEncoder(),
-        private LoggerInterface $logger = new NullLogger()
+        private LoggerInterface $logger = new NullLogger(),
     ) {
         $this->serverInfo = null;
         $this->currentServer = null;
@@ -147,7 +147,7 @@ final class NatsConnection implements LoggerAwareInterface
      *
      * @throws Exception
      */
-    public function publish(string $subject, string $payload, string $replyTo = null): void
+    public function publish(string $subject, string $payload, ?string $replyTo = null): void
     {
         if ($this->isConnected() === false) {
             throw new NatsConnectionRefusedException('Connection is closed');
@@ -192,7 +192,7 @@ final class NatsConnection implements LoggerAwareInterface
     /**
      * @throws Exception
      */
-    public function request(string $subject, string $payload = '', string $reply = null): MessageInterface
+    public function request(string $subject, string $payload = '', ?string $reply = null): MessageInterface
     {
         $replySubject = StringUtil::isEmpty($reply) ? self::createSid() : $reply;
 
@@ -372,6 +372,7 @@ final class NatsConnection implements LoggerAwareInterface
 
         if ($response instanceof Ping) {
             $this->pong();
+
             // @TODO add check for infinite loop
             return $this->getMsg();
         }

@@ -45,8 +45,8 @@ final class Response
         return match ($operation) {
             NatsProtocolOperation::HEADER_MSG => HMsg::create($body),
             NatsProtocolOperation::Msg => Msg::create($body),
-            NatsProtocolOperation::Info => \EJTJ3\PhpNats\Connection\ServerInfo::fromData($body),
-            default => throw new LogicException('Not implemented yet')
+            NatsProtocolOperation::Info => ServerInfo::fromData($body),
+            default => throw new LogicException('Not implemented yet'),
         };
     }
 }

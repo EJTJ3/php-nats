@@ -194,6 +194,7 @@ final class NatsConnection implements LoggerAwareInterface
      */
     public function request(string $subject, string $payload = '', ?string $reply = null): MessageInterface
     {
+        /** @var string $replySubject */
         $replySubject = StringUtil::isEmpty($reply) ? self::createSid() : $reply;
 
         $sub = $this->subscribe($replySubject, null);

@@ -10,6 +10,9 @@ use InvalidArgumentException;
 
 final class HMsg implements MessageInterface
 {
+    /**
+     * @var array<string, string|int|null>
+     */
     private array $headers;
 
     public ?string $payload;

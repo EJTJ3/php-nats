@@ -80,7 +80,7 @@ final class ServerInfo implements NatsResponseInterface
          * If the server supports Lame Duck Mode notifications,
          * and the current server has transitioned to lame duck, ldm will be set to true.
          */
-        private readonly bool $lameDuckMode
+        private readonly bool $lameDuckMode,
     ) {
     }
 

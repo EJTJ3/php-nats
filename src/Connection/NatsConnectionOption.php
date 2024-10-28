@@ -29,9 +29,9 @@ final class NatsConnectionOption implements NatsConnectionOptionInterface
      */
     public function __construct(
         array|Server|string|ServerCollection $servers = [],
-        string $name = null,
+        ?string $name = null,
         int $timeout = 5,
-        bool $randomize = false
+        bool $randomize = false,
     ) {
         if (is_string($servers) && StringUtil::isEmpty($servers) === false) {
             $servers = explode(',', $servers);

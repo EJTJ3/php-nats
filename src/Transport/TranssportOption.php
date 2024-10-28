@@ -9,7 +9,7 @@ final class TranssportOption implements TransportOptionsInterface
     public function __construct(
         private readonly string $host,
         private readonly int $port,
-        private readonly int $timeout
+        private readonly int $timeout,
     ) {
     }
 

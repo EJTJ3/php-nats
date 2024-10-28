@@ -39,7 +39,7 @@ final class Msg implements MessageInterface
         return match (count($parts)) {
             3 => new self($parts[0], $parts[1], null, (int) $parts[2]),
             4 => new self($parts[0], $parts[1], $parts[2], (int) $parts[3]),
-            default => throw new InvalidArgumentException('Invalid format')
+            default => throw new InvalidArgumentException('Invalid format'),
         };
     }
 

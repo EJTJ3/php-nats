@@ -143,7 +143,7 @@ final class ClientConnectionOptions
         $this->name = $name;
     }
 
-    public function getProtocol(): ?int
+    public function getProtocol(): int
     {
         return $this->protocol;
     }

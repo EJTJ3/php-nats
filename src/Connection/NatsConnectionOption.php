@@ -48,7 +48,7 @@ final class NatsConnectionOption implements NatsConnectionOptionInterface
                         return $server;
                     }
 
-                    if (is_string($server) && StringUtil::isEmpty($server) === false) {
+                    if (StringUtil::isEmpty($server) === false) {
                         return new Server($server);
                     }
 

@@ -29,10 +29,6 @@ final class ServerCollection
         }
 
         foreach ($servers as $server) {
-            if (!$server instanceof Server) {
-                throw new InvalidArgumentException(sprintf('Servers must be of type %s.', Server::class));
-            }
-
             $this->addServer($server);
         }
     }

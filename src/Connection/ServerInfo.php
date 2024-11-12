@@ -154,12 +154,12 @@ final class ServerInfo implements NatsResponseInterface
         return $this->version;
     }
 
-    public function isTlsRequired(): ?bool
+    public function isTlsRequired(): bool
     {
         return $this->tlsRequired;
     }
 
-    public function isTlsVerified(): ?bool
+    public function isTlsVerified(): bool
     {
         return $this->tlsVerify;
     }

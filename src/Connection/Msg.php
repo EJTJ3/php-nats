@@ -10,9 +10,9 @@ use InvalidArgumentException;
 final class Msg implements MessageInterface
 {
     /**
-     * @var string|null the message payload data
+     * @var string the message payload data
      */
-    private ?string $payload;
+    private string $payload;
 
     private function __construct(
         // subject name this message was received on - always

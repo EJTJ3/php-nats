@@ -1,6 +1,4 @@
 parameters:
-    level: 7 # 0 - loose, 8 - strict
+    level: 9
     paths:
         - src
-    checkGenericClassInNonGenericObjectType: false
-    checkMissingIterableValueType: false

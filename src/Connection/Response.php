@@ -24,8 +24,11 @@ final class Response
             return new Acknowledgement();
         }
 
-        if (NatsProtocolOperation::Err->isOperation($payload)) {
-            return new Error();
+        if (str_starts_with($payload, NatsProtocolOperation::Err->value)) {
+            $message = trim(substr($payload, strlen(NatsProtocolOperation::Err->value)));
+            $message = trim($message, " '\"");
+
+            return new Error($message);
         }
 
         if (!str_contains($payload, ' ')) {

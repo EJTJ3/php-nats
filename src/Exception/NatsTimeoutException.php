@@ -6,6 +6,6 @@ namespace EJTJ3\PhpNats\Exception;
 
 use RuntimeException;
 
-final class NatsTimeoutException extends RuntimeException
+final class NatsTimeoutException extends RuntimeException implements NatsExceptionInterface
 {
 }

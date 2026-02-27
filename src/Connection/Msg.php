@@ -45,7 +45,7 @@ final class Msg implements MessageInterface
 
     public function getPayload(): string
     {
-        return $this->payload ?? '';
+        return $this->payload;
     }
 
     public function setPayload(string $payload): void

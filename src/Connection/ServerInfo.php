@@ -99,7 +99,7 @@ final class ServerInfo implements NatsResponseInterface
          *     auth_required: bool|null,
          *     connect_urls: array<string>|null,
          *     client_id: int|null,
-         *     ldm: boolean|null,
+         *     ldm: bool|null,
          * } $content
          */
         $content = json_decode($response, true);

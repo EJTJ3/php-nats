@@ -90,7 +90,7 @@ final class StreamTransport implements NatsTransportInterface
         if (!stream_socket_enable_crypto(
             $this->getStream(),
             true,
-            STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT
+            STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT | STREAM_CRYPTO_METHOD_TLSv1_3_CLIENT
         )) {
             throw new NatsConnectionRefusedException('Failed to connect: Error negotiating crypto');
         }

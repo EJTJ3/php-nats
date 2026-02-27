@@ -10,10 +10,12 @@ use EJTJ3\PhpNats\Encoder\EncoderInterface;
 use EJTJ3\PhpNats\Encoder\JsonEncoder;
 use EJTJ3\PhpNats\Exception\NatsConnectionRefusedException;
 use EJTJ3\PhpNats\Exception\NatsInvalidResponseException;
+use EJTJ3\PhpNats\Exception\NatsReadException;
+use EJTJ3\PhpNats\Exception\NatsTimeoutException;
 use EJTJ3\PhpNats\Logger\NullLogger;
 use EJTJ3\PhpNats\Transport\NatsTransportInterface;
 use EJTJ3\PhpNats\Transport\Stream\StreamTransport;
-use EJTJ3\PhpNats\Transport\TranssportOption;
+use EJTJ3\PhpNats\Transport\TransportOption;
 use EJTJ3\PhpNats\Util\StringUtil;
 use Exception;
 use InvalidArgumentException;
@@ -78,7 +80,7 @@ final class NatsConnection implements LoggerAwareInterface
         }
 
         foreach ($this->connectionOptions->getServerCollection()->getServers() as $server) {
-            $transportOption = new TranssportOption(
+            $transportOption = new TransportOption(
                 host: $server->getHost(),
                 port: $server->getPort(),
                 timeout: $this->connectionOptions->getTimeout()
@@ -126,7 +128,28 @@ final class NatsConnection implements LoggerAwareInterface
 
     public function close(): void
     {
-        $this->transport->close();
+        if ($this->transport->isConnected()) {
+            $this->transport->close();
+        }
+
+        $this->connected = false;
+        $this->currentServer = null;
+        $this->serverInfo = null;
+
+        $this->logger->debug('Connection closed');
+    }
+
+    /**
+     * Reconnects by closing the current connection and trying all servers again.
+     *
+     * @throws Exception
+     */
+    public function reconnect(): void
+    {
+        $this->logger->debug('Attempting reconnect');
+
+        $this->close();
+        $this->connect();
     }
 
     public function setLogger(LoggerInterface $logger): void
@@ -163,6 +186,8 @@ final class NatsConnection implements LoggerAwareInterface
 
         $this->doWrite(NatsProtocolOperation::Pub, implode(' ', $content));
         $this->validateAcknowledgement();
+
+        $this->logger->debug(sprintf('Published %d bytes to "%s"', strlen($payload), $subject));
     }
 
     /**
@@ -256,14 +281,14 @@ final class NatsConnection implements LoggerAwareInterface
     }
 
     /**
-     * initiates a subscription to a subject, optionally joining a distributed queue group.
+     * Initiates a subscription to a subject, optionally joining a distributed queue group.
      *
-     * @param string|null $queueGroup if specified, the subscriber will join this queue group
      * @param string $subject the subject name to subscribe to
+     * @param string|null $queueGroup if specified, the subscriber will join this queue group
      *
      * @throws Exception
      */
-    private function subscribe(string $subject, ?string $queueGroup): Subscription
+    public function subscribe(string $subject, ?string $queueGroup = null): Subscription
     {
         $subscriptionId = self::createSid();
         $sub = new Subscription($subject, $subscriptionId);
@@ -278,16 +303,22 @@ final class NatsConnection implements LoggerAwareInterface
         $this->doWrite(NatsProtocolOperation::Sub, implode(' ', $payload));
         $this->validateAcknowledgement();
 
+        $this->logger->debug(sprintf('Subscribed to "%s" with sid "%s"', $subject, $subscriptionId));
+
         return $sub;
     }
 
     /**
+     * Unsubscribes from a subject by subscription ID.
+     *
      * @throws Exception
      */
-    private function unsubscribe(string $subscriptionId): void
+    public function unsubscribe(string $subscriptionId): void
     {
         $this->doWrite(NatsProtocolOperation::Unsub, $subscriptionId);
         $this->validateAcknowledgement();
+
+        $this->logger->debug(sprintf('Unsubscribed from sid "%s"', $subscriptionId));
     }
 
     /**
@@ -309,7 +340,7 @@ final class NatsConnection implements LoggerAwareInterface
             $read = $this->transport->read($chunkSize, Nats::CR_LF);
 
             if ($read === false) {
-                throw new Exception('Could not read from stream');
+                throw new NatsReadException('Could not read from stream');
             }
 
             if (is_string($read)) {
@@ -326,7 +357,7 @@ final class NatsConnection implements LoggerAwareInterface
             }
 
             if (microtime(true) >= $timeoutTarget) {
-                throw new InvalidArgumentException('Timeout reached');
+                throw new NatsTimeoutException('Timeout reached');
             }
         }
 
@@ -362,43 +393,54 @@ final class NatsConnection implements LoggerAwareInterface
         return $serverInfoMsg;
     }
 
+    private const MAX_PING_RETRIES = 10;
+
     /**
+     * Reads and returns the next message from the server.
+     *
      * @throws Exception
      */
-    private function getMsg(): NatsResponseInterface
+    public function getMsg(): NatsResponseInterface
     {
-        $line = $this->saveRead(0, 300);
+        $pingRetries = 0;
 
-        $response = Response::parse($line);
+        while (true) {
+            $line = $this->saveRead(0, 300);
 
-        if ($response instanceof Ping) {
-            $this->pong();
+            $response = Response::parse($line);
 
-            // @TODO add check for infinite loop
-            return $this->getMsg();
+            if ($response instanceof Ping) {
+                $this->pong();
+
+                if (++$pingRetries >= self::MAX_PING_RETRIES) {
+                    throw new NatsInvalidResponseException('Exceeded maximum number of PING retries');
+                }
+
+                continue;
+            }
+
+            if ($response instanceof ServerInfo || $response instanceof Pong || $response instanceof Acknowledgement || $response instanceof Error) {
+                return $response;
+            }
+
+            if ($response instanceof Msg) {
+                $payload = $this->saveRead($response->bytes);
+                $response->setPayload($payload);
+
+                return $response;
+            }
+
+            if ($response instanceof HMsg) {
+                $headers = $this->saveRead($response->headerBytes);
+                $response->setHeaders($headers);
+                $payload = $this->saveRead($response->totalBytes - $response->headerBytes);
+                $response->setPayload($payload);
+
+                return $response;
+            }
+
+            throw new LogicException('Msg type is not yet implemented');
         }
-
-        if ($response instanceof ServerInfo || $response instanceof Pong || $response instanceof Acknowledgement || $response instanceof Error) {
-            return $response;
-        }
-
-        if ($response instanceof Msg) {
-            $payload = $this->saveRead($response->bytes);
-            $response->setPayload($payload);
-
-            return $response;
-        }
-
-        if ($response instanceof HMsg) {
-            $headers = $this->saveRead($response->headerBytes);
-            $response->setHeaders($headers);
-            $payload = $this->saveRead($response->totalBytes - $response->headerBytes);
-            $response->setPayload($payload);
-
-            return $response;
-        }
-
-        throw new LogicException('Msg type is not yet implemented');
     }
 
     /**

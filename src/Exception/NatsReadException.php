@@ -6,6 +6,6 @@ namespace EJTJ3\PhpNats\Exception;
 
 use RuntimeException;
 
-final class NatsReadException extends RuntimeException
+final class NatsReadException extends RuntimeException implements NatsExceptionInterface
 {
 }

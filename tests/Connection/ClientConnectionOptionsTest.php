@@ -155,7 +155,7 @@ final class ClientConnectionOptionsTest extends TestCase
         $this->assertSame($expected, $options->toArray());
     }
 
-    public function createClientConnectionOptions(): Generator
+    public static function createClientConnectionOptions(): Generator
     {
         yield [new ClientConnectionOptions()];
     }

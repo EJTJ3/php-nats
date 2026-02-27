@@ -9,6 +9,9 @@ build
 build/
 build/*
 
+# php-cs-fixer
+.php-cs-fixer.cache
+
 # composer
 composer.lock
 /vendor

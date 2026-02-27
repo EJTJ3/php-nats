@@ -50,13 +50,45 @@ final class HMsg implements MessageInterface
         $this->payload = $payload;
     }
 
+    /**
+     * @return array<string, string|int|null>
+     */
+    public function getHeaders(): array
+    {
+        return $this->headers;
+    }
+
     public function setHeaders(string $headers): void
     {
-        // Check if we have an inlined status.
-        $parts = explode(' ', $headers);
+        $lines = explode("\r\n", $headers);
+
+        // First line is the protocol line, e.g. "NATS/1.0 503" or "NATS/1.0"
+        $parts = explode(' ', $lines[0]);
 
         if (isset($parts[1]) && strlen($parts[1]) === 3) {
             $this->headers['status'] = (int) $parts[1];
+        }
+
+        // Remaining lines are key-value header pairs
+        for ($i = 1, $count = count($lines); $i < $count; ++$i) {
+            $line = trim($lines[$i]);
+
+            if ($line === '') {
+                continue;
+            }
+
+            $colonPos = strpos($line, ':');
+
+            if ($colonPos === false) {
+                continue;
+            }
+
+            $key = trim(substr($line, 0, $colonPos));
+            $value = trim(substr($line, $colonPos + 1));
+
+            if ($key !== '') {
+                $this->headers[$key] = $value;
+            }
         }
     }
 

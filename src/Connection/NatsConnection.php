@@ -308,21 +308,20 @@ final class NatsConnection implements LoggerAwareInterface
 
             $read = $this->transport->read($chunkSize, Nats::CR_LF);
 
-            if ($read === false) {
-                throw new Exception('Could not read from stream');
+            $len = strlen($read);
+            $receivedBytes += $len;
+            $line .= $read;
+
+            // For command-line reads (no fixed length), one readUntil() call
+            // returns the full line — always stop after the first result.
+            if ($maxBytes === 0) {
+                break;
             }
 
-            if (is_string($read)) {
-                $len = strlen($read);
-
-                $receivedBytes += $len;
-
-                $line .= $read;
-
-                // End of string is reached
-                if ($len < 1024) {
-                    break;
-                }
+            // For fixed-size payload reads, stop when the chunk is smaller
+            // than requested (line ending hit before chunkSize).
+            if ($len < $chunkSize) {
+                break;
             }
 
             if (microtime(true) >= $timeoutTarget) {

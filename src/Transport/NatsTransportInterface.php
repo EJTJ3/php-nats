@@ -20,5 +20,5 @@ interface NatsTransportInterface
 
     public function write(string $payload): void;
 
-    public function read(int $length, string $lineEnding = Nats::CR_LF): bool|string;
+    public function read(int $length, string $lineEnding = Nats::CR_LF): string;
 }

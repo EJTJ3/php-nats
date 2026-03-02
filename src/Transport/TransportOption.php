@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace EJTJ3\PhpNats\Transport;
 
-final class TranssportOption implements TransportOptionsInterface
+final class TransportOption implements TransportOptionsInterface
 {
     public function __construct(
         private readonly string $host,

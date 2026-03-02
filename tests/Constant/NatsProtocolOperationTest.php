@@ -9,7 +9,7 @@ use PHPUnit\Framework\TestCase;
 
 final class NatsProtocolOperationTest extends TestCase
 {
-    public function testIsOperation()
+    public function testIsOperation(): void
     {
         self::assertTrue(NatsProtocolOperation::Pub->isOperation('PUB'));
         self::assertFalse(NatsProtocolOperation::Pub->isOperation('PUS'));

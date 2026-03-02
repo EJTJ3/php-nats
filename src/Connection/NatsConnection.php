@@ -13,7 +13,7 @@ use EJTJ3\PhpNats\Exception\NatsInvalidResponseException;
 use EJTJ3\PhpNats\Logger\NullLogger;
 use EJTJ3\PhpNats\Transport\NatsTransportInterface;
 use EJTJ3\PhpNats\Transport\Stream\StreamTransport;
-use EJTJ3\PhpNats\Transport\TranssportOption;
+use EJTJ3\PhpNats\Transport\TransportOption;
 use EJTJ3\PhpNats\Util\StringUtil;
 use Exception;
 use InvalidArgumentException;
@@ -78,7 +78,7 @@ final class NatsConnection implements LoggerAwareInterface
         }
 
         foreach ($this->connectionOptions->getServerCollection()->getServers() as $server) {
-            $transportOption = new TranssportOption(
+            $transportOption = new TransportOption(
                 host: $server->getHost(),
                 port: $server->getPort(),
                 timeout: $this->connectionOptions->getTimeout()

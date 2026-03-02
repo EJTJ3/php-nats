@@ -11,7 +11,7 @@ use PHPUnit\Framework\TestCase;
 
 final class ServerCollectionTest extends TestCase
 {
-    public function testServerCollection()
+    public function testServerCollection(): void
     {
         $servers = [
             new Server('nats://admin:admin@nats3.example.com:4222'),

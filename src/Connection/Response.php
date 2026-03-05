@@ -25,7 +25,7 @@ final class Response
         }
 
         if (NatsProtocolOperation::Err->isOperation($payload)) {
-            return new Error();
+            return Error::parse($payload);
         }
 
         if (!str_contains($payload, ' ')) {

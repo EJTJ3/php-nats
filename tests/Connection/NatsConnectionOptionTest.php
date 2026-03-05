@@ -42,6 +42,6 @@ final class NatsConnectionOptionTest extends TestCase
         );
 
         $this->assertSame('Testing server', $options->getName());
-        $this->assertSame(15, $options->getTimeout());
+        $this->assertSame(15.0, $options->getTimeout()->getTotalSeconds());
     }
 }

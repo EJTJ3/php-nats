@@ -7,13 +7,12 @@ namespace Connection;
 use EJTJ3\PhpNats\Connection\ClientConnectionOptions;
 use EJTJ3\PhpNats\Constant\Nats;
 use Generator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
 final class ClientConnectionOptionsTest extends TestCase
 {
-    /**
-     * @dataProvider createClientConnectionOptions
-     */
+    #[DataProvider('createClientConnectionOptions')]
     public function testVerbose(ClientConnectionOptions $options): void
     {
         $options->setVerbose(true);
@@ -23,9 +22,7 @@ final class ClientConnectionOptionsTest extends TestCase
         $this->assertFalse($options->isVerbose());
     }
 
-    /**
-     * @dataProvider createClientConnectionOptions
-     */
+    #[DataProvider('createClientConnectionOptions')]
     public function testPedantic(ClientConnectionOptions $options): void
     {
         $options->setPedantic(true);
@@ -35,9 +32,7 @@ final class ClientConnectionOptionsTest extends TestCase
         $this->assertFalse($options->isPedantic());
     }
 
-    /**
-     * @dataProvider createClientConnectionOptions
-     */
+    #[DataProvider('createClientConnectionOptions')]
     public function testTlsRequired(ClientConnectionOptions $options): void
     {
         $options->setTlsRequired(true);
@@ -47,9 +42,7 @@ final class ClientConnectionOptionsTest extends TestCase
         $this->assertFalse($options->isTlsRequired());
     }
 
-    /**
-     * @dataProvider createClientConnectionOptions
-     */
+    #[DataProvider('createClientConnectionOptions')]
     public function testSetAuthToken(ClientConnectionOptions $options): void
     {
         $options->setAuthToken('randomstring');
@@ -59,9 +52,7 @@ final class ClientConnectionOptionsTest extends TestCase
         $this->assertEmpty($options->getAuthToken());
     }
 
-    /**
-     * @dataProvider createClientConnectionOptions
-     */
+    #[DataProvider('createClientConnectionOptions')]
     public function testUser(ClientConnectionOptions $options): void
     {
         $options->setUser('admin');
@@ -71,9 +62,7 @@ final class ClientConnectionOptionsTest extends TestCase
         $this->assertEmpty($options->getUser());
     }
 
-    /**
-     * @dataProvider createClientConnectionOptions
-     */
+    #[DataProvider('createClientConnectionOptions')]
     public function testPassword(ClientConnectionOptions $options): void
     {
         $options->setPassword('randomstring');
@@ -83,9 +72,7 @@ final class ClientConnectionOptionsTest extends TestCase
         $this->assertEmpty($options->getPassword());
     }
 
-    /**
-     * @dataProvider createClientConnectionOptions
-     */
+    #[DataProvider('createClientConnectionOptions')]
     public function testName(ClientConnectionOptions $options): void
     {
         $options->setName('publicName');
@@ -95,9 +82,7 @@ final class ClientConnectionOptionsTest extends TestCase
         $this->assertEmpty($options->getName());
     }
 
-    /**
-     * @dataProvider createClientConnectionOptions
-     */
+    #[DataProvider('createClientConnectionOptions')]
     public function testProtocol(ClientConnectionOptions $options): void
     {
         $options->setProtocol(1);
@@ -107,9 +92,7 @@ final class ClientConnectionOptionsTest extends TestCase
         $this->assertSame(0, $options->getProtocol());
     }
 
-    /**
-     * @dataProvider createClientConnectionOptions
-     */
+    #[DataProvider('createClientConnectionOptions')]
     public function testEcho(ClientConnectionOptions $options): void
     {
         $options->setEcho(true);
@@ -119,9 +102,7 @@ final class ClientConnectionOptionsTest extends TestCase
         $this->assertFalse($options->isEcho());
     }
 
-    /**
-     * @dataProvider createClientConnectionOptions
-     */
+    #[DataProvider('createClientConnectionOptions')]
     public function testToArray(ClientConnectionOptions $options): void
     {
         $expected = [
@@ -155,7 +136,7 @@ final class ClientConnectionOptionsTest extends TestCase
         $this->assertSame($expected, $options->toArray());
     }
 
-    public function createClientConnectionOptions(): Generator
+    public static function createClientConnectionOptions(): Generator
     {
         yield [new ClientConnectionOptions()];
     }

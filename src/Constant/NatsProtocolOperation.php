@@ -94,6 +94,6 @@ enum NatsProtocolOperation: string
 
     public function isOperation(string $value): bool
     {
-        return $this->value === $value;
+        return $this->value === $value || str_starts_with($value, $this->value);
     }
 }

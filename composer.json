@@ -12,15 +12,17 @@
         }
     ],
     "require": {
-        "php" : "^8.3",
-        "azjezz/psl": "^4.0",
+        "php": "^8.4",
         "nyholm/dsn": "^2.0",
         "psr/log": "^1.0 || ^2.0 || ^3.0",
-        "ext-json": "*"
+        "ext-json": "*",
+        "azjezz/psl": "^5.0"
+
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.0",
-        "phpstan/phpstan": "^2.0"
+        "phpunit/phpunit": "^11",
+        "phpstan/phpstan": "^2.0",
+        "friendsofphp/php-cs-fixer": "^3.0"
     },
     "scripts": {
         "test": "vendor/bin/phpunit"

@@ -13,7 +13,6 @@ use EJTJ3\PhpNats\Exception\NatsInvalidResponseException;
 use EJTJ3\PhpNats\Logger\NullLogger;
 use EJTJ3\PhpNats\Transport\NatsTransportInterface;
 use EJTJ3\PhpNats\Transport\Stream\StreamTransport;
-use EJTJ3\PhpNats\Transport\TranssportOption;
 use EJTJ3\PhpNats\Util\StringUtil;
 use Exception;
 use InvalidArgumentException;
@@ -78,14 +77,8 @@ final class NatsConnection implements LoggerAwareInterface
         }
 
         foreach ($this->connectionOptions->getServerCollection()->getServers() as $server) {
-            $transportOption = new TranssportOption(
-                host: $server->getHost(),
-                port: $server->getPort(),
-                timeout: $this->connectionOptions->getTimeout()
-            );
-
             try {
-                $this->transport->connect($transportOption);
+                $this->transport->connect($server->getUrl(), $this->connectionOptions->getTimeout());
             } catch (Exception $e) {
                 $this->logger->error($e->getMessage());
 
@@ -112,9 +105,6 @@ final class NatsConnection implements LoggerAwareInterface
         }
 
         $this->doConnect();
-
-        // Validate PING response
-        $this->validatePing();
 
         $this->connected = true;
     }
@@ -206,13 +196,17 @@ final class NatsConnection implements LoggerAwareInterface
 
         $this->unsubscribe($sub->subscriptionId);
 
+        if ($msg instanceof Error) {
+            throw new NatsInvalidResponseException($msg->message);
+        }
+
         if (!$msg instanceof MessageInterface) {
             throw new InvalidArgumentException('Invalid response from nats');
         }
 
         if ($msg instanceof HMsg) {
             if ($msg->getHeader('status') === Nats::HEADER_NO_RESPONDER) {
-                throw new InvalidArgumentException('No responders are available');
+                throw new NatsInvalidResponseException('No responders are available');
             }
         }
 
@@ -293,43 +287,9 @@ final class NatsConnection implements LoggerAwareInterface
     /**
      * @throws Exception
      */
-    private function saveRead(int $maxBytes = 0, int $timeout = 100): string
+    private function saveRead(): string
     {
-        $line = '';
-        $timeoutTarget = microtime(true) + $timeout;
-        $receivedBytes = 0;
-        while ($receivedBytes < $maxBytes || $maxBytes === 0) {
-            $chunkSize = 1024;
-            $bytesLeft = ($maxBytes - $receivedBytes);
-
-            if ($maxBytes !== 0 && $bytesLeft < $chunkSize) {
-                $chunkSize = $bytesLeft;
-            }
-
-            $read = $this->transport->read($chunkSize, Nats::CR_LF);
-
-            $len = strlen($read);
-            $receivedBytes += $len;
-            $line .= $read;
-
-            // For command-line reads (no fixed length), one readUntil() call
-            // returns the full line — always stop after the first result.
-            if ($maxBytes === 0) {
-                break;
-            }
-
-            // For fixed-size payload reads, stop when the chunk is smaller
-            // than requested (line ending hit before chunkSize).
-            if ($len < $chunkSize) {
-                break;
-            }
-
-            if (microtime(true) >= $timeoutTarget) {
-                throw new InvalidArgumentException('Timeout reached');
-            }
-        }
-
-        return $line;
+        return $this->transport->read() ?? '';
     }
 
     /**
@@ -366,7 +326,7 @@ final class NatsConnection implements LoggerAwareInterface
      */
     private function getMsg(): NatsResponseInterface
     {
-        $line = $this->saveRead(0, 300);
+        $line = $this->saveRead();
 
         $response = Response::parse($line);
 
@@ -382,16 +342,16 @@ final class NatsConnection implements LoggerAwareInterface
         }
 
         if ($response instanceof Msg) {
-            $payload = $this->saveRead($response->bytes);
+            $payload = $this->saveRead();
             $response->setPayload($payload);
 
             return $response;
         }
 
         if ($response instanceof HMsg) {
-            $headers = $this->saveRead($response->headerBytes);
+            $headers = $this->saveRead();
             $response->setHeaders($headers);
-            $payload = $this->saveRead($response->totalBytes - $response->headerBytes);
+            $payload = $this->saveRead();
             $response->setPayload($payload);
 
             return $response;

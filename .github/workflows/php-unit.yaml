@@ -7,13 +7,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: php-actions/composer@v6
+        with:
+          php_version: 8.4
+          php_extensions: bcmath intl
 
       - name: PHPUnit Tests
         uses: php-actions/phpunit@v4
         with:
+          php_version: 8.4
           bootstrap: vendor/autoload.php
           configuration: phpunit.xml
-          args: --coverage-text

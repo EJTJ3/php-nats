@@ -7,23 +7,34 @@ namespace EJTJ3\PhpNats\Transport\Stream;
 use EJTJ3\PhpNats\Constant\Nats;
 use EJTJ3\PhpNats\Exception\NatsConnectionRefusedException;
 use EJTJ3\PhpNats\Transport\NatsTransportInterface;
-use EJTJ3\PhpNats\Transport\TransportOptionsInterface;
-use Exception;
+use Nyholm\Dsn\Configuration\Url;
+use Psl\DateTime\Duration;
+use Psl\IO\Reader;
+use Psl\Network\StreamInterface;
+use Psl\TCP;
+use Psl\TLS;
+use Psl\TLS\ClientConfig;
+use Psl\TLS\Connector;
 
 final class StreamTransport implements NatsTransportInterface
 {
-    /**
-     * @var resource|null
-     */
-    private $stream;
+    private ?StreamInterface $stream;
 
-    public function __construct(
-        /**
-         * @var int<0, max> $chunkSize
-         */
-        private readonly int $chunkSize = 1024,
-    ) {
+    private ?Reader $reader;
+
+    private ?Duration $timeout;
+
+    /**
+     * @var non-empty-string|null
+     */
+    private ?string $host;
+
+    public function __construct()
+    {
         $this->stream = null;
+        $this->reader = null;
+        $this->timeout = null;
+        $this->host = null;
     }
 
     /**
@@ -31,8 +42,10 @@ final class StreamTransport implements NatsTransportInterface
      */
     public function close(): void
     {
-        fclose($this->getStream());
+        $this->stream?->close();
         $this->stream = null;
+        $this->host = null;
+        $this->timeout = null;
     }
 
     public function isClosed(): bool
@@ -45,103 +58,66 @@ final class StreamTransport implements NatsTransportInterface
         return $this->stream !== null;
     }
 
-    public function connect(TransportOptionsInterface $option): void
+    public function connect(Url $url, Duration $timeout): void
     {
-        // Params
-        $address = sprintf('%s:%d', $option->getHost(), $option->getPort());
-        $timeout = $option->getTimeout();
-        $context = stream_context_get_default();
+        $host = $url->getHost();
 
-        // Create stream
-        $errorCode = null;
-        $errorMessage = null;
-
-        set_error_handler(static fn () => true);
-
-        $stream = stream_socket_client(
-            $address,
-            $errorCode,
-            $errorMessage,
-            $timeout,
-            STREAM_CLIENT_CONNECT,
-            $context
-        );
-
-        restore_error_handler();
-
-        if ($stream === false) {
-            throw new NatsConnectionRefusedException(sprintf('Could not connect to %s with an timeout of %d secondes', $address, $timeout));
+        if ($host === '') {
+            throw new NatsConnectionRefusedException('Host cannot be empty');
         }
 
-        stream_set_timeout($stream, $timeout, 0);
-
-        $this->stream = $stream;
-    }
-
-    public function enableTls(): void
-    {
-        // Create stream
-        set_error_handler(static function ($errorCode, $errorMessage) {
-            restore_error_handler();
-
-            throw new NatsConnectionRefusedException(sprintf('Failed to connect: %s', $errorMessage));
-        });
-
-        if (!stream_socket_enable_crypto(
-            $this->getStream(),
-            true,
-            STREAM_CRYPTO_METHOD_TLSv1_2_CLIENT
-        )) {
-            throw new NatsConnectionRefusedException('Failed to connect: Error negotiating crypto');
+        $port = $url->getPort() ?? 4222;
+        if ($port < 0 || $port > 65535) {
+            throw new NatsConnectionRefusedException('Port must be a non-negative integer');
         }
 
-        restore_error_handler();
+        $this->host = $host;
+        $this->timeout = $timeout;
+        $this->stream = TCP\connect($host, $port, timeout: $timeout);
+        $this->reader = new Reader($this->stream);
     }
 
-    /**
-     * @throws Exception
-     */
     public function write(string $payload): void
     {
-        $length = strlen($payload);
+        $this->getStream()->writeAll($payload, $this->timeout);
+    }
 
-        if ($length === 0) {
-            return;
+    public function read(string $lineEnding = Nats::CR_LF): ?string
+    {
+        return $this->getReader()->readUntil($lineEnding);
+    }
+
+    private function getReader(): Reader
+    {
+        if ($this->reader === null) {
+            throw new NatsConnectionRefusedException('Stream does not exist, try reconnecting');
         }
 
-        do {
-            $written = @fwrite($this->getStream(), $payload, $this->chunkSize);
-
-            if ($written === false) {
-                throw new NatsStreamWriteException('Error sending data');
-            }
-
-            if ($written === 0) {
-                throw new NatsStreamWriteException('Broken pipe or closed connection');
-            }
-
-            $length -= $written;
-
-            if ($length > 0) {
-                $payload = substr($payload, 0 - $length);
-            }
-        } while ($length > 0);
+        return $this->reader;
     }
 
-    public function read(int $length, string $lineEnding = Nats::CR_LF): false|string
-    {
-        return stream_get_line($this->getStream(), $length, $lineEnding);
-    }
-
-    /**
-     * @return resource
-     */
-    private function getStream()
+    public function getStream(): StreamInterface
     {
         if ($this->stream === null) {
             throw new NatsConnectionRefusedException('Stream does not exist, try reconnecting');
         }
 
         return $this->stream;
+    }
+
+    public function enableTls(): void
+    {
+        $stream = $this->getStream();
+
+        if ($stream instanceof TLS\StreamInterface) {
+            return;
+        }
+
+        if ($this->host === null) {
+            throw new NatsConnectionRefusedException('Host not found');
+        }
+
+        $this->stream = new Connector(ClientConfig::default())->connect($stream, $this->host);
+        $this->reader = new Reader($this->stream);
     }
 }

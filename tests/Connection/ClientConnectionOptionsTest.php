@@ -32,7 +32,7 @@ final class ClientConnectionOptionsTest extends TestCase
         $this->assertFalse($options->isPedantic());
     }
 
-     #[DataProvider('createClientConnectionOptions')]
+    #[DataProvider('createClientConnectionOptions')]
     public function testTlsRequired(ClientConnectionOptions $options): void
     {
         $options->setTlsRequired(true);
@@ -51,8 +51,8 @@ final class ClientConnectionOptionsTest extends TestCase
         $options->setAuthToken(null);
         $this->assertEmpty($options->getAuthToken());
     }
-    #[DataProvider('createClientConnectionOptions')]
 
+    #[DataProvider('createClientConnectionOptions')]
     public function testUser(ClientConnectionOptions $options): void
     {
         $options->setUser('admin');
@@ -101,7 +101,7 @@ final class ClientConnectionOptionsTest extends TestCase
         $options->setEcho(false);
         $this->assertFalse($options->isEcho());
     }
-    
+
     #[DataProvider('createClientConnectionOptions')]
     public function testToArray(ClientConnectionOptions $options): void
     {

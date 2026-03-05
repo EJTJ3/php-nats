@@ -4,27 +4,24 @@ declare(strict_types=1);
 
 namespace EJTJ3\PhpNats\Transport;
 
-final class TransportOption implements TransportOptionsInterface
+use Nyholm\Dsn\Configuration\Url;
+use Psl\DateTime\Duration;
+
+final readonly class TransportOption implements TransportOptionsInterface
 {
     public function __construct(
-        private readonly string $host,
-        private readonly int $port,
-        private readonly int $timeout,
+        private Url $url,
+        private Duration $timeout,
     ) {
     }
 
-    public function getTimeout(): int
+    public function getTimeout(): Duration
     {
         return $this->timeout;
     }
 
-    public function getHost(): string
+    public function getUrl(): Url
     {
-        return $this->host;
-    }
-
-    public function getPort(): int
-    {
-        return $this->port;
+        return $this->url;
     }
 }

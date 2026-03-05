@@ -6,6 +6,7 @@ namespace EJTJ3\PhpNats\Connection;
 
 use EJTJ3\PhpNats\Util\StringUtil;
 use InvalidArgumentException;
+use Psl\DateTime\Duration;
 
 final class NatsConnectionOption implements NatsConnectionOptionInterface
 {
@@ -75,8 +76,8 @@ final class NatsConnectionOption implements NatsConnectionOptionInterface
         return $this->serverCollection;
     }
 
-    public function getTimeout(): int
+    public function getTimeout(): Duration
     {
-        return $this->timeout;
+        return Duration::seconds($this->timeout);
     }
 }

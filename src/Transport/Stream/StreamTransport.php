@@ -46,6 +46,7 @@ final class StreamTransport implements NatsTransportInterface
         $this->stream = null;
         $this->host = null;
         $this->timeout = null;
+        $this->reader = null;
     }
 
     public function isClosed(): bool
@@ -66,7 +67,7 @@ final class StreamTransport implements NatsTransportInterface
             throw new NatsConnectionRefusedException('Host cannot be empty');
         }
 
-        $port = $url->getPort() ?? 4222;
+        $port = $url->getPort() ?? Nats::DEFAULT_PORT;
         if ($port < 0 || $port > 65535) {
             throw new NatsConnectionRefusedException('Port must be a non-negative integer');
         }
@@ -84,7 +85,7 @@ final class StreamTransport implements NatsTransportInterface
 
     public function read(string $lineEnding = Nats::CR_LF): ?string
     {
-        return $this->getReader()->readUntil($lineEnding);
+        return $this->getReader()->readUntil($lineEnding, $this->timeout);
     }
 
     private function getReader(): Reader

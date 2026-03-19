@@ -16,7 +16,7 @@
         "nyholm/dsn": "^2.0",
         "psr/log": "^1.0 || ^2.0 || ^3.0",
         "ext-json": "*",
-        "azjezz/psl": "^5.0"
+        "azjezz/psl": "^6.1"
 
     },
     "require-dev": {
